@@ -9,7 +9,7 @@ itemsRouter.get('/',async (request,response) => {
     const serializedItems = items.map(item => {
         return{
             id: item.id,
-            title: item.tile,
+            title: item.title,
             image_url: `http://localhost:3333/uploads/${item.image}`
         }
     });
