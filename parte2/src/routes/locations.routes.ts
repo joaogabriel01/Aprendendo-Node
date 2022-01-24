@@ -8,6 +8,7 @@ locationsRouter.get('/', async (request, response) => {
 
     const parsedItems = <any> String(items).split(',').map(item => Number(item.trim()))
 
+
     const locations = await knex('locations')
         .join('location_items','locations.id','=','location_items.location_id')
         .whereIn('location_items.item_id', parsedItems)
