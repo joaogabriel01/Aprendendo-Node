@@ -8,6 +8,7 @@ locationsRouter.get('/', async (request, response) => {
 
     const parsedItems = <any> String(items).split(',').map(item => Number(item.trim()))
 
+
     const locations = await knex('locations')
         .join('location_items','locations.id','=','location_items.location_id')
         .whereIn('location_items.item_id', parsedItems)
@@ -48,6 +49,8 @@ locationsRouter.post('/',async (request,response) => {
         items
     } = request.body;
 
+    // console.log(request.body);
+
     const location = {
         image: "fake-image.jpg",
         name,
@@ -62,22 +65,26 @@ locationsRouter.post('/',async (request,response) => {
     const transaction = await knex.transaction();
 
     const newIds = await transaction('locations').insert(location);
+    
 
     const location_id = newIds[0];
+    // console.log(location_id);
 
-    const locationItens = items.map(async (item_id: number) => {
-        const selectedItem = await transaction('items').where('id', 'item_id').first();
+    const locationItens = await Promise.all(items.map(async (item_id: number) => {
+        // console.log(item_id);
+        const selectedItem = await transaction('items').where('id', item_id).first();
 
         if(!selectedItem){
-            return response.status(400).json({ message: 'Item not found.'});
+            return response.status(400).json({ message: 'Item not found.' });
         }
         
         return {
             item_id,
             location_id
         }
-    });
+    }));
 
+    //testando2
     await transaction('location_items').insert(locationItens);
 
     await transaction.commit();
