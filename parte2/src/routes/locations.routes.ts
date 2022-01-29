@@ -119,7 +119,8 @@ locationsRouter.put('/:id', upload.single('image'), async (request, response) =>
     const { id } = request.params;
     console.log(request.params);
 
-    const image = request.file.filename;
+    const image = request.file?.filename;
+    // console.log(image);
 
     const location = await knex('locations').where('id',id).first();
 
