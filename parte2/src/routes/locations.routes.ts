@@ -1,6 +1,10 @@
 import {
     Router
 } from 'express';
+import {
+    celebrate,
+    Joi
+} from 'celebrate';
 import multer from 'multer';
 import knex from '../database/connection';
 import multerConfig from '../config/multer';
@@ -16,7 +20,7 @@ locationsRouter.get('/', async (request, response) => {
         items
     } = request.query;
 
-    if(city || uf || items){
+    if (city || uf || items) {
 
 
         const parsedItems: Number[] = String(items).split(',').map(item => Number(item.trim()))
@@ -29,18 +33,16 @@ locationsRouter.get('/', async (request, response) => {
             .where('uf', String(uf))
             .distinct()
             .select('locations.*');
-            return response.json(locations);
+        return response.json(locations);
 
-        
 
-    }
 
-    else{
+    } else {
         const locations = await knex('locations').select('*');
         return response.json(locations);
     }
 
-    
+
 })
 
 
@@ -70,7 +72,20 @@ locationsRouter.get('/:id', async (request, response) => {
     });
 })
 
-locationsRouter.post('/', async (request, response) => {
+locationsRouter.post('/', celebrate({
+    body: Joi.object().keys({
+        name: Joi.string().required(),
+        email: Joi.string().required().email(),
+        whatsapp: Joi.string().required(),
+        latitude: Joi.number().required(),
+        longitude: Joi.number().required(),
+        city: Joi.string().required(),
+        uf: Joi.string().required().max(2),
+        items: Joi.array().required(),
+    })
+}, {
+    abortEarly: false
+}), async (request, response) => {
     const {
         name,
         email,
@@ -132,17 +147,19 @@ locationsRouter.post('/', async (request, response) => {
 });
 
 locationsRouter.put('/:id', upload.single('image'), async (request, response) => {
-    const { id } = request.params;
+    const {
+        id
+    } = request.params;
     console.log(request.params);
 
     const image = request.file?.filename;
     // console.log(image);
 
-    const location = await knex('locations').where('id',id).first();
+    const location = await knex('locations').where('id', id).first();
 
-    if(!location) {
+    if (!location) {
         return response.status(400).json({
-           message: 'Location not found.' 
+            message: 'Location not found.'
         });
     }
 
@@ -151,7 +168,7 @@ locationsRouter.put('/:id', upload.single('image'), async (request, response) =>
         image
     }
 
-    await knex('locations').update(locationUpdated).where('id',id);
+    await knex('locations').update(locationUpdated).where('id', id);
 
     return response.json(locationUpdated);
 
