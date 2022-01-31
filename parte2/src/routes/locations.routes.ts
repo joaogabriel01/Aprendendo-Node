@@ -8,10 +8,13 @@ import {
 import multer from 'multer';
 import knex from '../database/connection';
 import multerConfig from '../config/multer';
+import isAuthenticated from '../middlewares/isAuthenticated';
 
 const locationsRouter = Router();
 
 const upload = multer(multerConfig);
+
+locationsRouter.use(isAuthenticated);
 
 locationsRouter.get('/', async (request, response) => {
     const {
